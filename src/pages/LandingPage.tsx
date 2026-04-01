@@ -4,7 +4,10 @@ import { motion } from "framer-motion"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import ChatPanel from "../components/ChatPanel"
+import ClinicGalleryCarousel from "../components/ClinicGalleryCarousel"
+import TrustSignalsStrip from "../components/TrustSignalsStrip"
 import { useAuth } from "../context/AuthContext"
+import { CLINIC_GALLERY_SLIDES } from "../lib/clinicGallery"
 import {
   CLINIC_ADDRESS_LINE,
   CLINIC_HOURS,
@@ -243,6 +246,26 @@ export default function LandingPage() {
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="scroll-rise border-y border-scratch-border/70 bg-scratch-surface-2/40 py-12 sm:py-16 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-8 lg:px-12">
+          <div className="mb-8 max-w-2xl lg:mb-10">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-scratch-accent">
+              See the clinic
+            </p>
+            <h2 className="mb-3 text-2xl leading-tight sm:text-4xl">
+              Real spaces, clear standards — before you book
+            </h2>
+            <p className="text-base leading-relaxed text-scratch-muted sm:text-lg">
+              Photos help you picture the visit: calm waiting, organised front desk, and
+              consult rooms where we take time to explain. Scroll or swipe on your phone;
+              use arrows or dots to explore on any device.
+            </p>
+          </div>
+          <ClinicGalleryCarousel slides={CLINIC_GALLERY_SLIDES} className="mb-8 lg:mb-10" />
+          <TrustSignalsStrip />
         </div>
       </section>
 
