@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+
+  --color-scratch-bg: #f6f8f7;
+  --color-scratch-surface: #ffffff;
+  --color-scratch-surface-2: #eef6f4;
+  --color-scratch-text: #12221e;
+  --color-scratch-muted: #5a6b66;
+  --color-scratch-border: #d9e5e1;
+  --color-scratch-accent: #0f766e;
+  --color-scratch-accent-2: #14b8a6;
+}
+
+@layer base {
+  html {
+    @apply font-sans text-scratch-text antialiased;
+    color-scheme: only light;
+    overflow-x: clip;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply m-0 min-h-svh bg-scratch-bg text-[17px] leading-relaxed;
+    overflow-x: clip;
+  }
+
+  #root {
+    @apply min-h-svh w-full max-w-full text-left;
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-semibold tracking-tight text-scratch-text;
+  }
+
+  .has-custom-cursor,
+  .has-custom-cursor * {
+    cursor: none !important;
+  }
+}
