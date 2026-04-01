@@ -122,13 +122,7 @@ export default function LandingPage() {
           >
             Scratchnest
           </Link>
-          <a
-            href={CLINIC_PHONE_TEL}
-            className="order-last flex w-full items-center justify-center rounded-2xl border border-scratch-accent/25 bg-scratch-surface px-4 py-2.5 font-display text-lg font-bold tracking-tight text-scratch-accent no-underline shadow-sm sm:order-none sm:w-auto sm:rounded-full sm:px-5 sm:py-2 sm:text-base"
-            data-cursor="pointer"
-          >
-            {CLINIC_PHONE_DISPLAY}
-          </a>
+          
           <nav
             className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2"
             aria-label="Primary"
@@ -141,9 +135,7 @@ export default function LandingPage() {
             >
               Book with AI
             </button>
-            <a className={btnPhone} href={CLINIC_PHONE_TEL} data-cursor="pointer">
-              Call clinic
-            </a>
+           
             <Link
               className={btnGhost}
               to={user ? "/portal" : "/login"}

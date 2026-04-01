@@ -164,13 +164,7 @@ export default function ClinicGalleryCarousel({ slides, className = "" }: Props)
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[0.7rem] text-scratch-muted sm:text-xs">
-        Demo photos for layout — swap in your real clinic pictures in{" "}
-        <code className="rounded bg-scratch-border/50 px-1 py-0.5 text-[0.65rem] text-scratch-text">
-          src/lib/clinicGallery.ts
-        </code>
-        .
-      </p>
+      
     </section>
   )
 }
