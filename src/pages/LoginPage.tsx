@@ -19,6 +19,9 @@ export default function LoginPage() {
   const [pending, setPending] = useState(false)
 
   if (initialized && user) {
+    if (user.role === "doctor") {
+      return <Navigate to="/doctor" replace />
+    }
     return <Navigate to={from && from.startsWith("/portal") ? from : "/portal"} replace />
   }
 
@@ -96,13 +99,21 @@ export default function LoginPage() {
           Offline mode: if the API is down, you still go straight to the portal — we
           create a local session from your email.
         </p>
-        <p className="mt-6 text-sm">
+        <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
           <Link
-            to="/"
+            to="/doctor/login"
             className="font-medium text-scratch-accent no-underline hover:underline"
             data-cursor="pointer"
           >
-            ← Back to clinic home
+            Doctor / staff sign in
+          </Link>
+          <span className="text-scratch-muted">·</span>
+          <Link
+            to="/"
+            className="font-medium text-scratch-muted no-underline hover:underline"
+            data-cursor="pointer"
+          >
+            ← Clinic home
           </Link>
         </p>
       </motion.div>

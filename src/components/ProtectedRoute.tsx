@@ -22,6 +22,9 @@ export default function ProtectedRoute() {
   }
 
   if (!user || user.role !== "patient") {
+    if (user?.role === "doctor") {
+      return <Navigate to="/doctor" replace />
+    }
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 

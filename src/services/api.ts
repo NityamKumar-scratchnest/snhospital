@@ -26,7 +26,8 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
       tokenServices.clear()
-      window.location.href = "/login"
+      const path = window.location.pathname
+      window.location.href = path.startsWith("/doctor") ? "/doctor/login" : "/login"
     }
 
     return Promise.reject(error)

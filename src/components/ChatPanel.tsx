@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion"
-import { useEffect } from "react"
-import type { SVGProps } from "react"
+import { useEffect, useMemo, useState, type ReactNode, type SVGProps } from "react"
+import ChatBookingCardList from "./ChatBookingCardList"
+import { useBookingChat } from "../hooks/useBookingChat"
 import { CLINIC_PHONE_DISPLAY, CLINIC_PHONE_TEL } from "../lib/clinic"
 
 function PhoneGlyph({ className, ...props }: SVGProps<SVGSVGElement>) {
@@ -21,15 +22,32 @@ function PhoneGlyph({ className, ...props }: SVGProps<SVGSVGElement>) {
   )
 }
 
-type Message = { id: string; from: "you" | "ai"; text: string }
-
-const seed: Message[] = [
-  {
-    id: "1",
-    from: "ai",
-    text: `Namaste — I’m Scratchnest’s care assistant. Ask me in English or हिंदी: clinic timings, how to book a GP visit, what to carry (Aadhaar / insurance card), or directions. For medical decisions you’ll always speak with our doctor. You can also call us at ${CLINIC_PHONE_DISPLAY}.`,
-  },
-]
+function MessageBody({ text }: { text: string }) {
+  const parts: ReactNode[] = []
+  const re = /\*\*(.+?)\*\*/g
+  let last = 0
+  let m: RegExpExecArray | null
+  let k = 0
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) {
+      parts.push(text.slice(last, m.index))
+    }
+    parts.push(
+      <strong key={k++} className="font-semibold text-scratch-text">
+        {m[1]}
+      </strong>
+    )
+    last = m.index + m[0].length
+  }
+  if (last < text.length) {
+    parts.push(text.slice(last))
+  }
+  return (
+    <span className="whitespace-pre-wrap break-words">
+      {parts.length ? parts : text}
+    </span>
+  )
+}
 
 type Props = {
   open: boolean
@@ -37,6 +55,17 @@ type Props = {
 }
 
 export default function ChatPanel({ open, onClose }: Props) {
+  const { messages, busy, submit, reset } = useBookingChat()
+  const [draft, setDraft] = useState("")
+
+  const quickReplies = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i]
+      if (m.from === "ai" && m.quickReplies?.length) return m.quickReplies
+    }
+    return []
+  }, [messages])
+
   useEffect(() => {
     if (!open) return
     const prevHtmlOverflow = document.documentElement.style.overflow
@@ -80,24 +109,36 @@ export default function ChatPanel({ open, onClose }: Props) {
               <header className="relative flex items-start justify-between gap-4">
                 <div>
                   <p className="mb-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-scratch-accent">
-                    Scratchnest · AI desk
+                    Scratchnest · Book in chat
                   </p>
                   <h2 id="chat-title" className="m-0 font-display text-xl font-semibold tracking-tight">
-                    Book &amp; enquire
+                    Care assistant
                   </h2>
                   <p className="mt-1.5 max-w-[280px] text-sm leading-snug text-scratch-muted">
-                    General physician OPD — smart triage, human follow-up on call.
+                    Book visits, see your slots, or ask about the clinic — powered by your number on
+                    file.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-scratch-border/60 bg-scratch-surface/90 text-lg leading-none text-scratch-text shadow-sm backdrop-blur-sm transition hover:bg-scratch-surface-2"
-                  data-cursor="pointer"
-                  onClick={onClose}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
+                <div className="flex shrink-0 gap-1">
+                  <button
+                    type="button"
+                    className="flex h-11 items-center justify-center rounded-2xl border border-scratch-border/60 bg-scratch-surface/90 px-3 text-xs font-bold text-scratch-muted shadow-sm backdrop-blur-sm transition hover:bg-scratch-surface-2 hover:text-scratch-text"
+                    data-cursor="pointer"
+                    onClick={() => reset()}
+                    aria-label="Start over"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-scratch-border/60 bg-scratch-surface/90 text-lg leading-none text-scratch-text shadow-sm backdrop-blur-sm transition hover:bg-scratch-surface-2"
+                    data-cursor="pointer"
+                    onClick={onClose}
+                    aria-label="Close"
+                  >
+                    ×
+                  </button>
+                </div>
               </header>
               <a
                 href={CLINIC_PHONE_TEL}
@@ -115,39 +156,98 @@ export default function ChatPanel({ open, onClose }: Props) {
                 </span>
               </a>
             </div>
-            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden p-4 [scrollbar-width:thin]">
-              {seed.map((m) => (
-                <div
-                  key={m.id}
-                  className={
-                    m.from === "ai"
-                      ? "max-w-[94%] self-start rounded-2xl border border-scratch-border/80 bg-scratch-surface-2/90 px-4 py-3.5 text-[0.9375rem] leading-relaxed text-scratch-text shadow-sm"
-                      : "max-w-[94%] self-end rounded-2xl bg-gradient-to-br from-scratch-accent to-teal-700 px-4 py-3.5 text-[0.9375rem] leading-relaxed text-white shadow-md"
-                  }
-                >
-                  {m.text}
+
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden p-4 [scrollbar-width:thin]">
+                {messages.map((m) => (
+                  <div
+                    key={m.id}
+                    className={
+                      m.from === "ai"
+                        ? "max-w-[94%] rounded-2xl border border-scratch-border/80 bg-scratch-surface-2/90 px-4 py-3.5 text-[0.9375rem] leading-relaxed text-scratch-text shadow-sm"
+                        : "ml-auto max-w-[94%] rounded-2xl bg-gradient-to-br from-scratch-accent to-teal-700 px-4 py-3.5 text-[0.9375rem] leading-relaxed text-white shadow-md"
+                    }
+                  >
+                    {m.from === "ai" ? (
+                      <>
+                        <MessageBody text={m.text} />
+                        {m.appointmentCards && m.appointmentCards.length > 0 ? (
+                          <ChatBookingCardList
+                            items={m.appointmentCards}
+                            banner={m.bookingBanner}
+                          />
+                        ) : null}
+                      </>
+                    ) : (
+                      <span className="whitespace-pre-wrap break-words">{m.text}</span>
+                    )}
+                  </div>
+                ))}
+                {busy ? (
+                  <div
+                    className="flex items-center gap-2 self-start rounded-2xl border border-scratch-border/60 bg-scratch-bg/80 px-4 py-3 text-sm text-scratch-muted"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="inline-flex gap-1" aria-hidden>
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-scratch-accent [animation-delay:-0.2s]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-scratch-accent [animation-delay:-0.1s]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-scratch-accent" />
+                    </span>
+                    Working…
+                  </div>
+                ) : null}
+              </div>
+
+              {quickReplies.length > 0 && !busy ? (
+                <div className="shrink-0 border-t border-scratch-border/60 bg-scratch-bg/40 px-3 py-2">
+                  <p className="mb-1.5 text-center text-[0.62rem] font-bold uppercase tracking-wider text-scratch-muted">
+                    Quick replies
+                  </p>
+                  <div className="flex max-h-28 flex-wrap justify-center gap-2 overflow-y-auto">
+                    {quickReplies.map((q) => (
+                      <button
+                        key={q.value}
+                        type="button"
+                        data-cursor="pointer"
+                        className="rounded-full border border-scratch-border bg-scratch-surface px-3 py-1.5 text-left text-xs font-semibold text-scratch-text shadow-sm transition hover:border-scratch-accent/40 hover:bg-scratch-surface-2"
+                        onClick={() => void submit(q.value)}
+                      >
+                        {q.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              ))}
+              ) : null}
             </div>
+
             <form
               className="border-t border-scratch-border bg-scratch-surface/95 p-4 backdrop-blur-md"
               onSubmit={(e) => {
                 e.preventDefault()
+                const t = draft.trim()
+                if (!t || busy) return
+                void submit(t)
+                setDraft("")
               }}
             >
               <p className="mb-2 text-center text-[0.7rem] font-medium uppercase tracking-wider text-scratch-muted">
-                Type below — our team may reply on WhatsApp / call
+                Type a message or use quick replies
               </p>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="e.g. I need a GP slot tomorrow evening…"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Mobile number, symptoms, date…"
                   aria-label="Message"
-                  className="min-w-0 flex-1 rounded-xl border border-scratch-border bg-scratch-bg/50 px-4 py-3 text-[0.9375rem] font-sans text-scratch-text outline-none ring-scratch-accent/25 transition placeholder:text-scratch-muted/70 focus:border-scratch-accent/40 focus:ring-2"
+                  disabled={busy}
+                  className="min-w-0 flex-1 rounded-xl border border-scratch-border bg-scratch-bg/50 px-4 py-3 text-[0.9375rem] font-sans text-scratch-text outline-none ring-scratch-accent/25 transition placeholder:text-scratch-muted/70 focus:border-scratch-accent/40 focus:ring-2 disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  className="shrink-0 rounded-xl border border-transparent bg-gradient-to-br from-scratch-accent to-teal-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-teal-900/20 transition hover:brightness-105"
+                  disabled={busy || !draft.trim()}
+                  className="shrink-0 rounded-xl border border-transparent bg-gradient-to-br from-scratch-accent to-teal-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-teal-900/20 transition hover:brightness-105 disabled:opacity-50"
                   data-cursor="pointer"
                 >
                   Send

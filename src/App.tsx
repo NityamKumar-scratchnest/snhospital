@@ -1,7 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom"
+import DoctorProtectedRoute from "./components/DoctorProtectedRoute"
 import ProtectedRoute from "./components/ProtectedRoute"
 import LandingPage from "./pages/LandingPage"
 import LoginPage from "./pages/LoginPage"
+import DoctorLoginPage from "./pages/DoctorLoginPage"
+import DoctorDashboard from "./pages/doctor/DoctorDashboard"
+import DoctorLayout from "./pages/doctor/DoctorLayout"
 import AppointmentsPage from "./pages/portal/AppointmentsPage"
 import BillsPage from "./pages/portal/BillsPage"
 import PortalHome from "./pages/portal/PortalHome"
@@ -17,6 +21,12 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/doctor/login" element={<DoctorLoginPage />} />
+      <Route element={<DoctorProtectedRoute />}>
+        <Route path="/doctor" element={<DoctorLayout />}>
+          <Route index element={<DoctorDashboard />} />
+        </Route>
+      </Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/portal" element={<PortalLayout />}>
           <Route index element={<PortalHome />} />
