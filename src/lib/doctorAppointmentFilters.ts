@@ -1,6 +1,7 @@
 import type { DoctorAppointmentRow } from "../hooks/useDoctorAppointments"
 
-export type BookingStatusFilter = "all" | "booked" | "completed" | "cancelled"
+/** `active` = booked or completed (anything except cancelled). */
+export type BookingStatusFilter = "all" | "active" | "booked" | "completed" | "cancelled"
 
 export type PaymentFilter = "all" | "pending" | "paid"
 
@@ -15,13 +16,23 @@ export type DoctorAppointmentFilterState = {
   followUpOnly: boolean
 }
 
+/** Default schedule: hide cancelled, show only visits that still need payment or consult work. */
+export const DOCTOR_APPOINTMENT_DEFAULT_FILTERS: DoctorAppointmentFilterState = {
+  booking: "active",
+  payment: "all",
+  consult: "all",
+  followUpOnly: true,
+}
+
 export function normalizeBookingStatus(a: DoctorAppointmentRow): string {
   return (a.status ?? "booked").toLowerCase().trim()
 }
 
 function matchesBooking(a: DoctorAppointmentRow, booking: BookingStatusFilter): boolean {
   if (booking === "all") return true
-  return normalizeBookingStatus(a) === booking
+  const bs = normalizeBookingStatus(a)
+  if (booking === "active") return bs !== "cancelled"
+  return bs === booking
 }
 
 function matchesPayment(a: DoctorAppointmentRow, payment: PaymentFilter): boolean {
@@ -55,9 +66,54 @@ export function filterDoctorAppointments(
 
 export function isDefaultDoctorFilters(state: DoctorAppointmentFilterState): boolean {
   return (
-    state.booking === "all" &&
-    state.payment === "all" &&
-    state.consult === "all" &&
-    !state.followUpOnly
+    state.booking === DOCTOR_APPOINTMENT_DEFAULT_FILTERS.booking &&
+    state.payment === DOCTOR_APPOINTMENT_DEFAULT_FILTERS.payment &&
+    state.consult === DOCTOR_APPOINTMENT_DEFAULT_FILTERS.consult &&
+    state.followUpOnly === DOCTOR_APPOINTMENT_DEFAULT_FILTERS.followUpOnly
   )
+}
+
+export type ScheduleViewPreset = "incomplete" | "active_day" | "cancelled" | "everything"
+
+export function getScheduleViewPreset(state: DoctorAppointmentFilterState): ScheduleViewPreset | "custom" {
+  const { payment, consult } = state
+  if (payment !== "all" || consult !== "all") return "custom"
+  if (state.booking === "active" && state.followUpOnly) return "incomplete"
+  if (state.booking === "active" && !state.followUpOnly) return "active_day"
+  if (state.booking === "cancelled" && !state.followUpOnly) return "cancelled"
+  if (state.booking === "all" && !state.followUpOnly) return "everything"
+  return "custom"
+}
+
+export function schedulePresetToFilters(preset: ScheduleViewPreset): DoctorAppointmentFilterState {
+  switch (preset) {
+    case "incomplete":
+      return {
+        booking: "active",
+        payment: "all",
+        consult: "all",
+        followUpOnly: true,
+      }
+    case "active_day":
+      return {
+        booking: "active",
+        payment: "all",
+        consult: "all",
+        followUpOnly: false,
+      }
+    case "cancelled":
+      return {
+        booking: "cancelled",
+        payment: "all",
+        consult: "all",
+        followUpOnly: false,
+      }
+    case "everything":
+      return {
+        booking: "all",
+        payment: "all",
+        consult: "all",
+        followUpOnly: false,
+      }
+  }
 }

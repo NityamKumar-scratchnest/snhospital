@@ -37,9 +37,4 @@
   h3 {
     @apply font-display font-semibold tracking-tight text-scratch-text;
   }
-
-  .has-custom-cursor,
-  .has-custom-cursor * {
-    cursor: none !important;
-  }
 }

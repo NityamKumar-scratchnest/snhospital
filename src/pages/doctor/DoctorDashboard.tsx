@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react"
 import ConfirmModal from "../../components/ConfirmModal"
 import DoctorAppointmentCard from "../../components/DoctorAppointmentCard"
 import DoctorCreateAppointmentModal from "../../components/DoctorCreateAppointmentModal"
+import DoctorScheduleFilters from "../../components/DoctorScheduleFilters"
 import { useAuth } from "../../context/AuthContext"
 import {
   formatAppointmentDateLabel,
@@ -11,12 +12,10 @@ import {
 } from "../../lib/appointmentDisplay"
 import api from "../../services/api"
 import {
+  DOCTOR_APPOINTMENT_DEFAULT_FILTERS,
   filterDoctorAppointments,
   isDefaultDoctorFilters,
-  type BookingStatusFilter,
-  type ConsultFilter,
   type DoctorAppointmentFilterState,
-  type PaymentFilter,
 } from "../../lib/doctorAppointmentFilters"
 import {
   type ConsultStatus,
@@ -27,15 +26,6 @@ import {
 
 const inputClass =
   "rounded-[10px] border border-scratch-border bg-scratch-surface px-3 py-2 font-sans text-sm text-scratch-text outline-none ring-scratch-accent/30 focus:ring-2"
-
-const selectClass = `${inputClass} w-full cursor-pointer bg-scratch-surface`
-
-const defaultFilters: DoctorAppointmentFilterState = {
-  booking: "all",
-  payment: "all",
-  consult: "all",
-  followUpOnly: false,
-}
 
 function paymentLabel(s: PaymentStatus): string {
   return s === "paid" ? "Paid" : "Pending"
@@ -80,7 +70,9 @@ export default function DoctorDashboard() {
     next: PaymentStatus
   } | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
-  const [filters, setFilters] = useState<DoctorAppointmentFilterState>(defaultFilters)
+  const [filters, setFilters] = useState<DoctorAppointmentFilterState>(
+    DOCTOR_APPOINTMENT_DEFAULT_FILTERS
+  )
 
   const busy = mutatingId !== null
 
@@ -202,8 +194,7 @@ export default function DoctorDashboard() {
             Schedule
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-scratch-muted">
-            Fees and consult progress sync with the server. Live bookings still arrive over the
-            socket.
+            Fees and consult sync with the server. Live bookings still arrive over the socket.
           </p>
         </div>
         <div className="flex flex-col items-stretch gap-3 sm:items-end">
@@ -292,121 +283,36 @@ export default function DoctorDashboard() {
         </div>
       ) : null}
 
-      <div className="mb-5 flex flex-col gap-3 rounded-xl border border-scratch-border bg-scratch-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-        <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-scratch-text">
-          <input
-            type="checkbox"
-            checked={useDateFilter}
-            onChange={(e) => setUseDateFilter(e.target.checked)}
-            className="h-4 w-4 rounded border-scratch-border text-scratch-accent focus:ring-scratch-accent"
-          />
-          Single day
-        </label>
-        <label className="flex min-w-[160px] flex-1 flex-col gap-1 sm:max-w-[220px]">
-          <span className="text-xs font-semibold text-scratch-muted">Date</span>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            disabled={!useDateFilter}
-            className={`${inputClass} disabled:opacity-45`}
-          />
-        </label>
-      </div>
-
-      <div className="mb-5 rounded-xl border border-scratch-border bg-scratch-surface p-4 shadow-sm">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-scratch-text">Filters</h2>
-          {filtersActive ? (
-            <button
-              type="button"
-              className="text-xs font-semibold text-scratch-accent underline-offset-2 hover:underline"
-              data-cursor="pointer"
-              onClick={() => setFilters(defaultFilters)}
-            >
-              Reset
-            </button>
-          ) : null}
-        </div>
-        <label className="mb-4 flex cursor-pointer items-start gap-3 rounded-lg border border-amber-200/80 bg-amber-50/40 px-3 py-2.5 dark:border-amber-900/40 dark:bg-amber-950/20">
-          <input
-            type="checkbox"
-            checked={filters.followUpOnly}
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, followUpOnly: e.target.checked }))
-            }
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-scratch-border text-scratch-accent focus:ring-scratch-accent"
-          />
-          <span className="text-sm leading-snug text-scratch-text">
-            <span className="font-semibold">Follow-up only</span>
-            <span className="block text-xs font-normal text-scratch-muted">
-              Payment still pending or consult not finished (queue / visit).
-            </span>
-          </span>
-        </label>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-scratch-muted">Visit status</span>
-            <select
-              className={selectClass}
-              value={filters.booking}
-              onChange={(e) =>
-                setFilters((f) => ({
-                  ...f,
-                  booking: e.target.value as BookingStatusFilter,
-                }))
-              }
-              aria-label="Filter by visit status"
-            >
-              <option value="all">All</option>
-              <option value="booked">Booked</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+      <div className="mb-5 rounded-xl border border-scratch-border bg-scratch-surface p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-scratch-text">
+            <input
+              type="checkbox"
+              checked={useDateFilter}
+              onChange={(e) => setUseDateFilter(e.target.checked)}
+              className="h-4 w-4 rounded border-scratch-border text-scratch-accent focus:ring-scratch-accent"
+            />
+            Single day
           </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-scratch-muted">Payment</span>
-            <select
-              className={selectClass}
-              value={filters.payment}
-              onChange={(e) =>
-                setFilters((f) => ({
-                  ...f,
-                  payment: e.target.value as PaymentFilter,
-                }))
-              }
-              aria-label="Filter by payment"
-            >
-              <option value="all">All</option>
-              <option value="pending">Pending</option>
-              <option value="paid">Paid</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-scratch-muted">Consult</span>
-            <select
-              className={selectClass}
-              value={filters.consult}
-              onChange={(e) =>
-                setFilters((f) => ({
-                  ...f,
-                  consult: e.target.value as ConsultFilter,
-                }))
-              }
-              aria-label="Filter by consult progress"
-            >
-              <option value="all">All</option>
-              <option value="open">In progress (queue or visit)</option>
-              <option value="queue">Queue</option>
-              <option value="visit">Visit</option>
-              <option value="done">Done</option>
-            </select>
+          <label className="flex min-w-[160px] flex-1 flex-col gap-1 sm:max-w-[220px]">
+            <span className="text-xs font-semibold text-scratch-muted">Date</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              disabled={!useDateFilter}
+              className={`${inputClass} disabled:opacity-45`}
+            />
           </label>
         </div>
-        <p className="mt-3 text-xs text-scratch-muted">
-          Filters apply on this device to the list already loaded for the date above. Combine
-          cancelled with payment or consult to narrow down.
-        </p>
+        <div className="my-4 h-px bg-scratch-border" aria-hidden />
+        <DoctorScheduleFilters
+          embedded
+          filters={filters}
+          onChange={setFilters}
+          onReset={() => setFilters(DOCTOR_APPOINTMENT_DEFAULT_FILTERS)}
+          isDefault={!filtersActive}
+        />
       </div>
 
       {loading && (
@@ -433,9 +339,10 @@ export default function DoctorDashboard() {
         !error &&
         appointments.length > 0 &&
         filteredAppointments.length === 0 && (
-          <p className="rounded-xl border border-dashed border-amber-200/80 bg-amber-50/30 px-4 py-8 text-center text-sm text-scratch-text dark:border-amber-900/40 dark:bg-amber-950/20">
-            No appointments match these filters. Try resetting filters or choosing another visit
-            status.
+          <p className="rounded-xl border border-dashed border-teal-300/70 bg-teal-50/40 px-4 py-8 text-center text-sm text-scratch-text dark:border-teal-800/50 dark:bg-teal-950/25">
+            Nothing matches this view. Try{" "}
+            <strong className="font-semibold">Active day</strong> or{" "}
+            <strong className="font-semibold">Everything</strong>, or reset to the default queue.
           </p>
         )}
 
