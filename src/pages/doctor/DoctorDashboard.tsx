@@ -18,7 +18,6 @@ import {
   type DoctorAppointmentFilterState,
 } from "../../lib/doctorAppointmentFilters"
 import {
-  type ConsultStatus,
   type PaymentStatus,
   todayLocalISODate,
   useDoctorAppointments,
@@ -110,13 +109,15 @@ export default function DoctorDashboard() {
     }
   }, [paymentConfirm, refetch])
 
-  const handleConsultSelect = useCallback(
-    async (id: string, current: ConsultStatus, next: ConsultStatus) => {
-      if (next === current) return
+  const handleMarkCompleted = useCallback(
+    async (id: string) => {
       setMutatingId(id)
       setActionError(null)
       try {
-        await api.patch(`/appointments/update/${id}`, { consultStatus: next })
+        await api.patch(`/appointments/update/${id}`, {
+          status: "completed",
+          consultStatus: "done",
+        })
         await refetch()
       } catch (e) {
         setActionError(apiErrMessage(e))
@@ -353,7 +354,7 @@ export default function DoctorDashboard() {
               appointment={a}
               disabled={busy}
               onPaymentSelect={(next) => handlePaymentSelect(a.id, a.paymentStatus, next)}
-              onConsultSelect={(next) => void handleConsultSelect(a.id, a.consultStatus, next)}
+              onMarkCompleted={() => void handleMarkCompleted(a.id)}
               onDelete={() => setDeleteConfirmId(a.id)}
             />
           </li>
