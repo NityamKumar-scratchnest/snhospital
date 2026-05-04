@@ -3,7 +3,7 @@ import type { InternalAxiosRequestConfig } from "axios"
 import { tokenServices } from "./tokenService"
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000",
+  baseURL: "https://api.siro.care",
   timeout: 50000,
 })
 

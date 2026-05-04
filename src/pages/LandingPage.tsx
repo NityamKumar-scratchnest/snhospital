@@ -138,7 +138,7 @@ export default function LandingPage() {
            
             <Link
               className={btnGhost}
-              to={user ? "/portal" : "/login"}
+              to="/doctor/login"
               data-cursor="pointer"
             >
               {user ? "Portal" : "Log in"}
