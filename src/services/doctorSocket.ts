@@ -16,7 +16,7 @@ function socketBaseUrl(): string | undefined {
   if (explicit?.trim()) return explicit.trim()
   const api = import.meta.env.VITE_API_URL as string | undefined
   if (api?.trim()) return api.trim()
-  return "http://localhost:3000"
+  return "https://api.siro.care"
 }
 
 /**
