@@ -13,6 +13,15 @@
   --color-scratch-accent: #0f766e;
   --color-scratch-accent-2: #14b8a6;
 }
+/* Hide scrollbar but allow scrolling */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
+}
 
 @layer base {
   html {
