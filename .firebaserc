@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "clinicos-sn"
+  },
+  "targets": {
+    "clinicos-sn": {
+      "hosting": {
+        "app": [
+          "clinicos-sn-df7b4"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
